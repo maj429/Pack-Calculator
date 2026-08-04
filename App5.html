@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Battery Pack Designer & Calculator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        /* Responsive Outer Container */
+        .card {
+            background-color: #1e1e1e;
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.6);
+            width: 100%;
+            max-width: 1100px; /* Expands wider on PC screens */
+            box-sizing: border-box;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #4da6ff;
+            font-size: 1.6rem;
+            border-bottom: 1px solid #333;
+            padding-bottom: 12px;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            margin-top: 16px;
+            margin-bottom: 10px;
+            color: #888;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+        }
+
+        /* Main Desktop Responsive Layout (2-Column Grid) */
+        .app-layout {
+            display: grid;
+            grid-template-columns: 1fr; /* Default single column for mobile */
+            gap: 28px;
+        }
+
+        /* Media Query: Switch to 2 columns on screens 768px or wider */
+        @media (min-width: 768px) {
+            .app-layout {
+                grid-template-columns: 420px 1fr; /* Inputs fixed on left, results expand on right */
+            }
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .input-group {
+            margin-bottom: 8px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 9px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background-color: #2a2a2a;
+            color: #fff;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4da6ff;
+        }
+
+        /* Results Display Section */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        /* Side-by-Side Results Boxes on Wide Displays */
+        @media (min-width: 992px) {
+            .results-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .result-box {
+            background-color: #242424;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid #2d2d2d;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.88rem;
+        }
+
+        .result-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-value {
+            font-weight: bold;
+            color: #00e676;
+            text-align: right;
+        }
+
+        .highlight {
+            color: #ff9100;
+            font-size: 1.1rem;
+        }
+
+        .note-box {
+            background-color: #262626;
+            border-left: 4px solid #4da6ff;
+            padding: 12px;
+            font-size: 0.85rem;
+            color: #ccc;
+            margin-top: 16px;
+            border-radius: 0 6px 6px 0;
+            line-height: 1.45;
+            grid-column: 1 / -1; /* Spans full width of results section */
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Pro Battery Pack Designer & BOM Tool</h2>
+    
+    <div class="app-layout">
+        <!-- LEFT COLUMN: INPUT CONTROLS -->
+        <div class="input-pane">
+            <h3>1. Cell Selection & Test Data</h3>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="cellType">Cell Form Factor</label>
+                    <select id="cellType" onchange="calculate()">
+                        <option value="18650" data-d="18.3" data-h="65.0">18650 (18x65mm)</option>
+                        <option value="21700" data-d="21.3" data-h="70.5" selected>21700 (21x70.5mm)</option>
+                        <option value="26650" data-d="26.3" data-h="65.5">26650 (26x65.5mm)</option>
+                        <option value="32700" data-d="32.3" data-h="70.0">32700 (32x70mm)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="cellCost">Cost per Cell ($)</label>
+                    <input type="number" id="cellCost" placeholder="4.50" value="4.50" step="0.1" oninput="calculate()">
+                </div>
+                <div class="input-group">
+                    <label for="capacity">Capacity (mAh)</label>
+                    <input type="number" id="capacity" placeholder="5000" value="5000" oninput="calculate()">
+                </div>
+                <div class="input-group">
+                    <label for="dcir">Cell DCIR (mΩ)</label>
+                    <input type="number" id="dcir" placeholder="15" value="15" step="0.1" oninput="calculate()">
+                </div>
+            </div>
+
+            <h3>2. Target Pack Specifications</h3>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="targetAmps">Target Cont. Amps</label>
+                    <input type="number" id="targetAmps" placeholder="100" value="100" oninput="calculate()">
+                </div>
+                <div class="input-group">
+                    <label for="series">Series Count (S)</label>
+                    <input type="number" id="series" placeholder="20" value="20" oninput="calculate()">
+                </div>
+                <div class="input-group" style="grid-column: span 2;">
+                    <label for="material">Preferred Busbar Material</label>
+                    <select id="material" onchange="calculate()">
+                        <option value="cu" selected>Pure Copper (40 A/mm²)</option>
+                        <option value="cu-ni">Nickel-Plated Copper (38 A/mm²)</option>
+                        <option value="ni">Pure Nickel (10 A/mm²)</option>
+                        <option value="ni-steel">Nickel-Plated Steel (6 A/mm²)</option>
+                        <option value="al">Aluminum (22 A/mm²)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: RESULTS & OUTPUTS -->
+        <div class="results-pane">
+            <div class="results-grid">
+                <!-- Box 1: Cell Capabilities -->
+                <div class="result-box">
+                    <h3>Cell Capabilities</h3>
+                    <div class="result-row">
+                        <span>Cont. Discharge:</span>
+                        <span class="result-value" id="cellContAmps">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Peak Burst (5s):</span>
+                        <span class="result-value" style="color: #ff9100;" id="cellBurstAmps">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Calculated C-Rate:</span>
+                        <span class="result-value" id="cellCrate">-</span>
+                    </div>
+                </div>
+
+                <!-- Box 2: Configuration & Cost -->
+                <div class="result-box">
+                    <h3>Pack Configuration</h3>
+                    <div class="result-row">
+                        <span>Pack Layout:</span>
+                        <span class="result-value highlight" id="config">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Total Cells:</span>
+                        <span class="result-value" id="totalCells">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Total Cell Cost:</span>
+                        <span class="result-value" id="totalCost" style="color:#00e676;">-</span>
+                    </div>
+                </div>
+
+                <!-- Box 3: Pack Performance -->
+                <div class="result-box">
+                    <h3>Pack Performance</h3>
+                    <div class="result-row">
+                        <span>Actual Cont. Rating:</span>
+                        <span class="result-value" id="actualAmps">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Peak Burst (5s):</span>
+                        <span class="result-value" style="color: #ff9100;" id="peakAmps">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Total Energy:</span>
+                        <span class="result-value" id="packEnergy">-</span>
+                    </div>
+                </div>
+
+                <!-- Box 4: Dimensions -->
+                <div class="result-box">
+                    <h3>Physical Dimensions</h3>
+                    <div class="result-row">
+                        <span>Est. Size (mm):</span>
+                        <span class="result-value" id="dimsMm">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Est. Size (Inches):</span>
+                        <span class="result-value" id="dimsInches">-</span>
+                    </div>
+                </div>
+
+                <!-- Box 5: Busbar & Strips -->
+                <div class="result-box" style="grid-column: 1 / -1;">
+                    <h3>Busbar & Strip Sizing Requirements</h3>
+                    <div class="result-row">
+                        <span>Cell-to-Cell Jumper Strip:</span>
+                        <span class="result-value" id="cellStrip">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Main Series Busbar Area:</span>
+                        <span class="result-value" id="reqArea">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Main Series Strip Rec.:</span>
+                        <span class="result-value" id="recStrip" style="color:#4da6ff;">-</span>
+                    </div>
+                    <div class="result-row">
+                        <span>Total Interconnect BOM:</span>
+                        <span class="result-value" id="bomLength">-</span>
+                    </div>
+                </div>
+
+                <!-- Box 6: Build Guidance -->
+                <div class="note-box" id="instructions">
+                    -
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        const capacity = parseFloat(document.getElementById('capacity').value);
+        const dcir = parseFloat(document.getElementById('dcir').value);
+        const targetAmps = parseFloat(document.getElementById('targetAmps').value);
+        const series = parseFloat(document.getElementById('series').value);
+        const cellCost = parseFloat(document.getElementById('cellCost').value) || 0;
+        
+        const cellSelect = document.getElementById('cellType');
+        const selectedOpt = cellSelect.options[cellSelect.selectedIndex];
+        const cellDia = parseFloat(selectedOpt.getAttribute('data-d'));
+        const cellHeight = parseFloat(selectedOpt.getAttribute('data-h'));
+        const material = document.getElementById('material').value;
+
+        if (!capacity || !dcir || dcir <= 0 || capacity <= 0 || !targetAmps || !series) {
+            return;
+        }
+
+        // 1. Single Cell Performance (2W Thermal Limit)
+        const dcirOhms = dcir / 1000;
+        const cellContinuousAmps = Math.sqrt(2.0 / dcirOhms);
+        const cellBurstAmps = cellContinuousAmps * 1.5;
+        const cellAh = capacity / 1000;
+        const cellCrate = cellContinuousAmps / cellAh;
+
+        document.getElementById('cellContAmps').innerText = `${cellContinuousAmps.toFixed(2)} A`;
+        document.getElementById('cellBurstAmps').innerText = `${cellBurstAmps.toFixed(2)} A`;
+        document.getElementById('cellCrate').innerText = `${cellCrate.toFixed(2)} C`;
+
+        // 2. Parallel Count Calculation
+        const parallelCount = Math.ceil(targetAmps / cellContinuousAmps);
+        const totalCells = series * parallelCount;
+        const totalCellCost = totalCells * cellCost;
+
+        const actualContinuousAmps = parallelCount * cellContinuousAmps;
+        const peakBurstAmps = actualContinuousAmps * 1.5;
+
+        const packAh = cellAh * parallelCount;
+        const nominalVoltage = series * 3.6;
+        const totalWh = packAh * nominalVoltage;
+
+        // Output Basic Specs
+        document.getElementById('config').innerText = `${series}S ${parallelCount}P`;
+        document.getElementById('totalCells').innerText = `${totalCells} cells`;
+        document.getElementById('totalCost').innerText = `$${totalCellCost.toFixed(2)}`;
+        document.getElementById('actualAmps').innerText = `${actualContinuousAmps.toFixed(1)} A`;
+        document.getElementById('peakAmps').innerText = `${peakBurstAmps.toFixed(1)} A`;
+        document.getElementById('packEnergy').innerText = `${packAh.toFixed(1)} Ah (${(totalWh / 1000).toFixed(2)} kWh)`;
+
+        // 3. Physical Dimensions (Square Grid Layout)
+        const pitch = cellDia + 2.0; // 2mm gap for spacers
+        
+        const widthMm = (parallelCount * pitch).toFixed(0);
+        const lengthMm = (series * pitch).toFixed(0);
+        const heightMm = (cellHeight + 10).toFixed(0);
+
+        const widthIn = (widthMm / 25.4).toFixed(1);
+        const lengthIn = (lengthMm / 25.4).toFixed(1);
+        const heightIn = (heightMm / 25.4).toFixed(1);
+
+        document.getElementById('dimsMm').innerText = `${lengthMm} L x ${widthMm} W x ${heightMm} H mm`;
+        document.getElementById('dimsInches').innerText = `${lengthIn}" L x ${widthIn}" W x ${heightIn}" H`;
+
+        // 4. Busbar & Strip Ampacity Calculations
+        const ampacityMap = {
+            'cu': 40,
+            'cu-ni': 38,
+            'ni': 10,
+            'ni-steel': 6,
+            'al': 22
+        };
+
+        const currentDensity = ampacityMap[material];
+
+        // A) Cell-to-Cell Parallel Jumper
+        const cellReqArea = cellContinuousAmps / currentDensity;
+        const cellReqWidth = cellReqArea / 0.2; // Based on 0.20mm thickness
+        let cellStripRec = "";
+        if (cellReqWidth <= 8) {
+            cellStripRec = `0.20mm x 8mm (${material.toUpperCase()})`;
+        } else if (cellReqWidth <= 10) {
+            cellStripRec = `0.20mm x 10mm (${material.toUpperCase()})`;
+        } else {
+            cellStripRec = `0.20mm x 12mm (${material.toUpperCase()})`;
+        }
+        document.getElementById('cellStrip').innerText = cellStripRec;
+
+        // B) Main Series Junctions
+        const reqArea = actualContinuousAmps / currentDensity;
+        document.getElementById('reqArea').innerText = `${reqArea.toFixed(2)} mm²`;
+
+        const reqWidth = reqArea / 0.2; // Based on 0.20mm thickness
+        let stripRecommendation = "";
+        if (reqWidth <= 10) {
+            stripRecommendation = `Single 0.20mm x 10mm Strip`;
+        } else if (reqWidth <= 20) {
+            stripRecommendation = `Double Layer (2x) 0.20mm x 10mm Strip`;
+        } else {
+            const layers = Math.ceil(reqWidth / 10);
+            stripRecommendation = `${layers}x Stacked Layers of 0.20mm x 10mm Strip`;
+        }
+        document.getElementById('recStrip').innerText = stripRecommendation;
+
+        // 5. BOM Strip Length Estimation
+        const parallelBusLength = parallelCount * pitch * series; 
+        const seriesBusLength = series * pitch * parallelCount; 
+        const totalMm = (parallelBusLength + seriesBusLength) * 1.2; // 20% waste factor
+        
+        const totalMeters = (totalMm / 1000).toFixed(1);
+        const totalFeet = (totalMm / 304.8).toFixed(1);
+
+        document.getElementById('bomLength').innerText = `~${totalMeters} Meters (${totalFeet} Feet)`;
+
+        // 6. Build Instructions / Double-Up Guidance
+        let instructions = `<strong>Assembly Guidance:</strong><br>`;
+        instructions += `• <strong>Cell Parallel Leg:</strong> Each cell leg only carries <strong>${cellContinuousAmps.toFixed(1)}A</strong>. A single <em>${cellStripRec}</em> is plenty.<br>`;
+        instructions += `• <strong>Series Bridges:</strong> Bridges carry total pack output (<strong>${actualContinuousAmps.toFixed(0)}A</strong>). Use <em>${stripRecommendation}</em> across all cell series channels.<br>`;
+        instructions += `• <strong>Terminal Double-Up:</strong> Add an extra layer of strip on the <strong>Main B+</strong>, <strong>Main B-</strong>, and any <strong>mid-pack service disconnects</strong> to eliminate local bottleneck heating.`;
+
+        document.getElementById('instructions').innerHTML = instructions;
+    }
+
+    calculate();
+</script>
+
+</body>
+</html>
