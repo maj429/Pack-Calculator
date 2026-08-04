@@ -1,0 +1,17 @@
+{
+  "name": "Pack Designer Pro",
+  "short_name": "Pack Design",
+  "description": "Pro Battery Pack Sizing and BOM Tool",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#121212",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3103/3103328.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
