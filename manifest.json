@@ -1,7 +1,7 @@
 {
-  "name": "Pack Designer Pro",
-  "short_name": "Pack Design",
-  "description": "Pro Battery Pack Sizing and BOM Tool",
+  "name": "Pack Calculator",
+  "short_name": "Pack Calculator",
+  "description": "Battery Pack Sizing and BOM Tool",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#121212",
